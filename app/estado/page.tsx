@@ -1,0 +1,248 @@
+export default function EstadoPage() {
+  return (
+    <main className="min-h-screen bg-[#020b14] text-white">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden">
+        {/* HEADER */}
+        <header className="flex items-start justify-between px-6 pb-5 pt-7">
+          <div>
+            <div className="text-[30px] leading-none tracking-[-1.5px]">
+              <span className="font-semibold text-[#f39a1e]">MAD</span>
+              <span className="font-light text-[#f39a1e]">deM</span>
+            </div>
+
+            <div className="mt-1 text-[10px] leading-[12px] tracking-wide text-white/90">
+              MONUMENTO AL DEPORTE
+              <br />
+              DE MONTAÑA
+            </div>
+          </div>
+
+          {/* Campana */}
+          <button
+            type="button"
+            aria-label="Notificaciones"
+            className="mt-1 flex h-9 w-9 items-center justify-center text-white"
+          >
+            <svg
+              width="25"
+              height="25"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+              <path d="M10 21h4" />
+            </svg>
+          </button>
+        </header>
+
+        {/* CONTENIDO */}
+        <section className="flex-1 px-5 pb-24">
+          <h1 className="mb-5 text-[16px] font-medium tracking-wide text-white">
+            ESTADO DEL PROYECTO
+          </h1>
+
+          <div className="space-y-3">
+            {/* EMPRESAS */}
+            <article className="flex min-h-[91px] items-center rounded-lg border border-[#2b3540] bg-[#06121d]/80 px-4">
+              <div className="mr-5 flex w-[54px] justify-center text-[#f39a1e]">
+                <svg
+                  width="45"
+                  height="45"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="24" cy="12" r="6" />
+                  <path d="M13 35c0-6 4.5-10 11-10s11 4 11 10v4H13z" />
+                  <circle cx="9" cy="18" r="4" />
+                  <path d="M3 37v-3c0-4 2.5-7 6-7 2 0 3.5.5 4.8 1.8" />
+                  <circle cx="39" cy="18" r="4" />
+                  <path d="M45 37v-3c0-4-2.5-7-6-7-2 0-3.5.5-4.8 1.8" />
+                </svg>
+              </div>
+
+              <div>
+                <p className="text-[14px] text-white/90">
+                  Empresas adheridas
+                </p>
+                <p className="mt-1 text-[29px] leading-none text-[#f39a1e]">
+                  0
+                </p>
+              </div>
+            </article>
+
+            {/* OBJETIVO */}
+            <article className="flex min-h-[91px] items-center rounded-lg border border-[#2b3540] bg-[#06121d]/80 px-4">
+              <div className="mr-5 flex w-[54px] justify-center text-[#f39a1e]">
+                <svg
+                  width="45"
+                  height="45"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="24" cy="24" r="15" />
+                  <circle cx="24" cy="24" r="8" />
+                  <circle cx="24" cy="24" r="2.5" />
+                  <path d="M31 17l8-8" />
+                  <path d="M34 9h5v5" />
+                </svg>
+              </div>
+
+              <div>
+                <p className="text-[14px] text-white/90">
+                  Objetivo económico
+                </p>
+                <p className="mt-1 text-[25px] leading-none text-white">
+                  USD <span className="text-[#f39a1e]">26.000</span>
+                </p>
+              </div>
+            </article>
+
+            {/* PENDIENTE */}
+            <article className="flex min-h-[106px] items-center rounded-lg border border-[#2b3540] bg-[#06121d]/80 px-4">
+              <div className="mr-5 flex w-[54px] justify-center text-[#f39a1e]">
+                <svg
+                  width="45"
+                  height="45"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 39V28" />
+                  <path d="M8 28l9-9 7 7 10-13" />
+                  <path d="M29 13h8v8" />
+                  <path d="M13 39h26" />
+                  <path d="M18 39V29" />
+                  <path d="M25 39V27" />
+                  <path d="M32 39V20" />
+                </svg>
+              </div>
+
+              <div>
+                <p className="max-w-[160px] text-[14px] leading-[19px] text-white/90">
+                  Pendiente para iniciar
+                  <br />
+                  la construcción
+                </p>
+                <p className="mt-1 text-[25px] leading-none text-white">
+                  USD <span className="text-[#f39a1e]">26.000</span>
+                </p>
+              </div>
+            </article>
+          </div>
+
+          {/* BOTÓN */}
+          <button
+            type="button"
+            className="mt-4 flex h-[43px] w-full items-center justify-center rounded-md bg-[#e9951c] text-[12px] font-medium text-[#111]"
+          >
+            ADHERIR COMO EMPRESA FUNDADORA
+          </button>
+        </section>
+
+        {/* BOTTOM NAV */}
+        <nav className="fixed bottom-0 left-1/2 z-20 flex h-[68px] w-full max-w-md -translate-x-1/2 border-t border-[#27313a] bg-[#020b14]">
+          <NavItem active icon="state" label="Estado" />
+          <NavItem icon="companies" label="Empresas" />
+          <NavItem icon="destination" label="Destino" />
+          <NavItem icon="menu" label="Menú" />
+        </nav>
+      </div>
+    </main>
+  );
+}
+
+function NavItem({
+  active = false,
+  icon,
+  label,
+}: {
+  active?: boolean;
+  icon: "state" | "companies" | "destination" | "menu";
+  label: string;
+}) {
+  const color = active ? "#f39a1e" : "#ffffff";
+
+  return (
+    <button
+      type="button"
+      className="flex flex-1 flex-col items-center justify-center gap-1"
+      style={{ color }}
+    >
+      <span>
+        {icon === "state" && (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M5 19V11M12 19V6M19 19V3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
+
+        {icon === "companies" && (
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <circle cx="12" cy="7" r="3" />
+            <path d="M6 20c0-4 2.5-6 6-6s6 2 6 6" />
+            <circle cx="5" cy="10" r="2" />
+            <circle cx="19" cy="10" r="2" />
+          </svg>
+        )}
+
+        {icon === "destination" && (
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 20l7-12 3 5 3-5 3 12" />
+            <path d="M8 20h8" />
+          </svg>
+        )}
+
+        {icon === "menu" && (
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        )}
+      </span>
+
+      <span className="text-[9px]">{label}</span>
+    </button>
+  );
+}
