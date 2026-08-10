@@ -2,6 +2,8 @@ import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmpresasPage() {
   const { data, error } = await supabase
     .from("companies")
