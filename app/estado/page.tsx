@@ -1,13 +1,36 @@
-export default function EstadoPage() {
+import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import BottomNav from "@/components/BottomNav";
+
+export default async function EstadoPage() {
+  const supabase = await createSupabaseServerClient();
+
+  const [{ count }, { data: campaign }] = await Promise.all([
+    supabase
+      .from("companies")
+      .select("*", { count: "exact", head: true })
+      .eq("active", true),
+
+    supabase
+      .from("campaign_settings")
+      .select("objective_amount, remaining_amount")
+      .eq("id", 1)
+      .single(),
+  ]);
+
+  const companiesCount = count ?? 0;
+  const objectiveAmount = campaign?.objective_amount ?? 0;
+  const remainingAmount = campaign?.remaining_amount ?? 0;
+
   return (
     <main className="min-h-screen bg-[#020b14] text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
         {/* HEADER */}
-        <header className="flex items-start justify-between px-6 pb-5 pt-7">
+        <header className="flex items-start justify-between px-5 pt-7">
           <div>
-            <div className="text-[30px] leading-none tracking-[-1.5px]">
-              <span className="font-semibold text-[#f39a1e]">MAD</span>
-              <span className="font-light text-[#f39a1e]">deM</span>
+            <div className="text-[25px] font-light leading-[22px] tracking-[-0.08em]">
+              MAD
+              <span className="text-[#f39a1e]">deM</span>
             </div>
 
             <div className="mt-1 text-[10px] leading-[12px] tracking-wide text-white/90">
@@ -17,7 +40,7 @@ export default function EstadoPage() {
             </div>
           </div>
 
-          {/* Campana */}
+          {/* CAMPANA */}
           <button
             type="button"
             aria-label="Notificaciones"
@@ -72,8 +95,9 @@ export default function EstadoPage() {
                 <p className="text-[14px] text-white/90">
                   Empresas adheridas
                 </p>
+
                 <p className="mt-1 text-[29px] leading-none text-[#f39a1e]">
-                  0
+                  {companiesCount}
                 </p>
               </div>
             </article>
@@ -103,8 +127,12 @@ export default function EstadoPage() {
                 <p className="text-[14px] text-white/90">
                   Objetivo económico
                 </p>
+
                 <p className="mt-1 text-[25px] leading-none text-white">
-                  USD <span className="text-[#f39a1e]">26.000</span>
+                  USD{" "}
+                  <span className="text-[#f39a1e]">
+                    {Number(objectiveAmount).toLocaleString("es-AR")}
+                  </span>
                 </p>
               </div>
             </article>
@@ -138,29 +166,27 @@ export default function EstadoPage() {
                   <br />
                   la construcción
                 </p>
+
                 <p className="mt-1 text-[25px] leading-none text-white">
-                  USD <span className="text-[#f39a1e]">26.000</span>
+                  USD{" "}
+                  <span className="text-[#f39a1e]">
+                    {Number(remainingAmount).toLocaleString("es-AR")}
+                  </span>
                 </p>
               </div>
             </article>
           </div>
 
           {/* BOTÓN */}
-          <button
-            type="button"
+          <Link
+            href="/adhesion"
             className="mt-4 flex h-[43px] w-full items-center justify-center rounded-md bg-[#e9951c] text-[12px] font-medium text-[#111]"
           >
             ADHERIR COMO EMPRESA FUNDADORA
-          </button>
+          </Link>
         </section>
 
-        {/* BOTTOM NAV */}
-        <nav className="fixed bottom-0 left-1/2 z-20 flex h-[68px] w-full max-w-md -translate-x-1/2 border-t border-[#27313a] bg-[#020b14]">
-          <NavItem active icon="state" label="Estado" />
-          <NavItem icon="companies" label="Empresas" />
-          <NavItem icon="destination" label="Destino" />
-          <NavItem icon="menu" label="Menú" />
-        </nav>
+        <BottomNav active="estado" />
       </div>
     </main>
   );
@@ -183,64 +209,64 @@ function NavItem({
       className="flex flex-1 flex-col items-center justify-center gap-1"
       style={{ color }}
     >
-      <span>
-        {icon === "state" && (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M5 19V11M12 19V6M19 19V3"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
+      {icon === "state" && (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <circle cx="12" cy="12" r="8" />
+        </svg>
+      )}
 
-        {icon === "companies" && (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <circle cx="12" cy="7" r="3" />
-            <path d="M6 20c0-4 2.5-6 6-6s6 2 6 6" />
-            <circle cx="5" cy="10" r="2" />
-            <circle cx="19" cy="10" r="2" />
-          </svg>
-        )}
+      {icon === "companies" && (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <circle cx="12" cy="7" r="3" />
+          <path d="M6 20c0-4 2.5-6 6-6s6 2 6 6" />
+          <circle cx="5" cy="10" r="2" />
+          <circle cx="19" cy="10" r="2" />
+        </svg>
+      )}
 
-        {icon === "destination" && (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 20l7-12 3 5 3-5 3 12" />
-            <path d="M8 20h8" />
-          </svg>
-        )}
+      {icon === "destination" && (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 20l7-12 3 5 3-5 3 12" />
+          <path d="M8 20h8" />
+        </svg>
+      )}
 
-        {icon === "menu" && (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          >
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        )}
-      </span>
+      {icon === "menu" && (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      )}
 
       <span className="text-[9px]">{label}</span>
     </button>
