@@ -16,7 +16,8 @@ export default async function AdminEmpresasPage() {
   const { data: companies, error } = await supabase
     .from("companies")
     .select(
-  "id, name, description, logo_url, donation_nominal, sort_order, active"
+  "id, name, description, logo_url, donation_nominal, sort_order, active, contact_name, email, phone"
+
 )
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });

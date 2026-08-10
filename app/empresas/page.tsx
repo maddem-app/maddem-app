@@ -35,10 +35,10 @@ export default async function EmpresasPage() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
         {/* HEADER */}
         <header className="flex h-[82px] items-start justify-between px-5 pt-5">
-          <div>
-            <div className="text-[28px] font-light leading-none tracking-tight text-white">
+          <Link href="/estado" className="flex flex-col">
+            <div className="text-[29px] font-semibold leading-none tracking-tight text-[#f39a1e]">
               MAD
-              <span className="text-[#f39a1e]">deM</span>
+              <span className="text-white">deM</span>
             </div>
 
             <div className="mt-1 text-[10px] leading-[12px] tracking-wide text-white/90">
@@ -46,12 +46,12 @@ export default async function EmpresasPage() {
               <br />
               DE MONTAÑA
             </div>
-          </div>
+          </Link>
 
           {/* CAMPANA */}
-          <button
-            type="button"
-            aria-label="Notificaciones"
+          <Link
+            href="/novedades"
+            aria-label="Novedades"
             className="mt-1 flex h-9 w-9 items-center justify-center text-white"
           >
             <svg
@@ -67,7 +67,7 @@ export default async function EmpresasPage() {
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
               <path d="M10 21h4" />
             </svg>
-          </button>
+          </Link>
         </header>
 
         {/* CONTENIDO */}
@@ -113,22 +113,6 @@ export default async function EmpresasPage() {
                         {company.description}
                       </p>
                     )}
-                  </div>
-
-                  {/* FLECHA */}
-                  <div className="pr-2 text-[#f39a1e]">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
                   </div>
                 </article>
               ))

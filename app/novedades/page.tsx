@@ -1,15 +1,16 @@
 import Link from "next/link";
+import BottomNav from "@/components/BottomNav";
 
 export default function NovedadesPage() {
   return (
     <main className="min-h-screen bg-[#020b14] text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
         {/* HEADER */}
-        <header className="flex items-start justify-between px-5 pt-6">
-          <Link href="/menu" className="block">
-            <div className="text-[24px] leading-none">
-              <span className="font-semibold text-white">MAD</span>
-              <span className="font-normal text-[#f39a1e]">deM</span>
+        <header className="flex items-start justify-between px-5 pt-5">
+          <Link href="/estado" aria-label="Inicio">
+            <div className="text-[24px] font-medium leading-none">
+              <span className="text-[#f39a1e]">MAD</span>
+              <span className="text-white">deM</span>
             </div>
 
             <div className="mt-1 text-[10px] leading-[12px] tracking-wide text-white/90">
@@ -41,7 +42,7 @@ export default function NovedadesPage() {
         </header>
 
         {/* CONTENIDO */}
-        <section className="flex-1 px-5 pb-24 pt-7">
+        <section className="flex-1 px-5 pb-28 pt-7">
           <h1 className="text-[17px] font-medium tracking-wide text-white">
             NOVEDADES
           </h1>
@@ -77,101 +78,8 @@ export default function NovedadesPage() {
         </section>
 
         {/* BOTTOM NAV */}
-        <nav className="fixed bottom-0 left-1/2 z-20 flex h-[68px] w-full max-w-md -translate-x-1/2 border-t border-[#27313a] bg-[#020b14]">
-          <NavItem icon="state" label="Estado" href="/estado" />
-          <NavItem icon="companies" label="Empresas" href="/empresas" />
-          <NavItem icon="destination" label="Destino" href="/destino" />
-          <NavItem active icon="menu" label="Menú" href="/menu" />
-        </nav>
+        <BottomNav active="menu" />
       </div>
     </main>
-  );
-}
-
-function NavItem({
-  active = false,
-  icon,
-  label,
-  href,
-}: {
-  active?: boolean;
-  icon: "state" | "companies" | "destination" | "menu";
-  label: string;
-  href: string;
-}) {
-  const color = active ? "#f39a1e" : "#ffffff";
-
-  return (
-    <Link
-      href={href}
-      className="flex flex-1 flex-col items-center justify-center gap-1"
-      style={{ color }}
-    >
-      {icon === "state" && (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 19V10" />
-          <path d="M10 19V6" />
-          <path d="M16 19V12" />
-          <path d="M22 19V3" />
-        </svg>
-      )}
-
-      {icon === "companies" && (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <circle cx="12" cy="7" r="3" />
-          <path d="M6 20c0-4 2.5-6 6-6s6 2 6 6" />
-          <circle cx="5" cy="10" r="2" />
-          <circle cx="19" cy="10" r="2" />
-        </svg>
-      )}
-
-      {icon === "destination" && (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20l7-12 3 5 3-5 3 12" />
-          <path d="M8 20h8" />
-        </svg>
-      )}
-
-      {icon === "menu" && (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        >
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
-      )}
-
-      <span className="text-[9px]">{label}</span>
-    </Link>
   );
 }

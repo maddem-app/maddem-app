@@ -150,6 +150,12 @@ export default function AndresZerneriPage() {
           Coordinación, desarrollo y articulación de los aspectos técnicos,
           tecnológicos, institucionales y operativos del proyecto MADdeM.
         </p>
+        <a
+  href="tel:+541134490093"
+  className="mt-4 inline-block text-[13px] text-[#e88a18]"
+>
+  11 3449-0093
+</a>
       </section>
 
       {/* NAVEGACIÓN */}

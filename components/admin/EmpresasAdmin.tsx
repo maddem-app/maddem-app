@@ -16,6 +16,9 @@ type Company = {
   donation_nominal: number;
   sort_order: number;
   active: boolean;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
 };
 
 export default function EmpresasAdmin({
@@ -27,14 +30,15 @@ export default function EmpresasAdmin({
 
   const [companies, setCompanies] = useState(initialCompanies);
 
-  const [editingCompanyId, setEditingCompanyId] = useState<string | null>(
-    null
-  );
+  const [editingCompanyId, setEditingCompanyId] =
+    useState<string | null>(null);
 
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [logo, setLogo] = useState<File | null>(null);
+  const [contactName, setContactName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [donationNominal, setDonationNominal] = useState("");
+  const [logo, setLogo] = useState<File | null>(null);
 
   const [objectiveAmount, setObjectiveAmount] = useState("26000");
   const [remainingAmount, setRemainingAmount] = useState("26000");
@@ -66,16 +70,20 @@ export default function EmpresasAdmin({
     loadCampaignSettings();
   }, [supabase]);
 
-  function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleLogoChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
     setLogo(event.target.files?.[0] ?? null);
   }
 
   function resetForm() {
     setEditingCompanyId(null);
     setName("");
-    setDescription("");
-    setLogo(null);
+    setContactName("");
+    setEmail("");
+    setPhone("");
     setDonationNominal("");
+    setLogo(null);
 
     const fileInput = document.getElementById(
       "company-logo"
@@ -89,8 +97,12 @@ export default function EmpresasAdmin({
   function handleEdit(company: Company) {
     setEditingCompanyId(company.id);
     setName(company.name);
-    setDescription(company.description ?? "");
-    setDonationNominal(String(company.donation_nominal));
+    setContactName(company.contact_name ?? "");
+    setEmail(company.email ?? "");
+    setPhone(company.phone ?? "");
+    setDonationNominal(
+      String(company.donation_nominal)
+    );
     setLogo(null);
 
     const fileInput = document.getElementById(
@@ -110,7 +122,9 @@ export default function EmpresasAdmin({
     });
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setLoading(true);
@@ -121,24 +135,39 @@ export default function EmpresasAdmin({
 
     try {
       if (!name.trim()) {
-        throw new Error("El nombre de la empresa es obligatorio.");
+        throw new Error(
+          "El nombre de la empresa es obligatorio."
+        );
       }
 
       const donationValue = Number(donationNominal);
       const objectiveValue = Number(objectiveAmount);
       const remainingValue = Number(remainingAmount);
 
-      if (!Number.isFinite(donationValue) || donationValue < 0) {
-        throw new Error("La donación nominal no es válida.");
-      }
-
-      if (!Number.isFinite(objectiveValue) || objectiveValue < 0) {
-        throw new Error("El objetivo de campaña no es válido.");
-      }
-
-      if (!Number.isFinite(remainingValue) || remainingValue < 0) {
+      if (
+        !Number.isFinite(donationValue) ||
+        donationValue < 0
+      ) {
         throw new Error(
-          "El monto pendiente para iniciar la construcción no es válido."
+          "La donación nominal no es válida."
+        );
+      }
+
+      if (
+        !Number.isFinite(objectiveValue) ||
+        objectiveValue < 0
+      ) {
+        throw new Error(
+          "El objetivo de campaña no es válido."
+        );
+      }
+
+      if (
+        !Number.isFinite(remainingValue) ||
+        remainingValue < 0
+      ) {
+        throw new Error(
+          "El monto restante no es válido."
         );
       }
 
@@ -147,57 +176,70 @@ export default function EmpresasAdmin({
        * EDITAR EMPRESA
        * ============================================================
        */
+
       if (editingCompanyId) {
         const currentCompany = companies.find(
-          (company) => company.id === editingCompanyId
+          (company) =>
+            company.id === editingCompanyId
         );
 
         if (!currentCompany) {
-          throw new Error("No se encontró la empresa a editar.");
+          throw new Error(
+            "No se encontró la empresa a editar."
+          );
         }
 
         let newLogoPath = currentCompany.logo_url;
 
-        /*
-         * Si se seleccionó un nuevo logo, primero lo subimos.
-         */
         if (logo) {
           const fileExtension =
-            logo.name.split(".").pop()?.toLowerCase() || "png";
+            logo.name
+              .split(".")
+              .pop()
+              ?.toLowerCase() || "png";
 
           newFilePath = `${crypto.randomUUID()}.${fileExtension}`;
 
-          const { error: uploadError } = await supabase.storage
-            .from("company-logos")
-            .upload(newFilePath, logo, {
-              cacheControl: "3600",
-              upsert: false,
-            });
+          const { error: uploadError } =
+            await supabase.storage
+              .from("company-logos")
+              .upload(
+                newFilePath,
+                logo,
+                {
+                  cacheControl: "3600",
+                  upsert: false,
+                }
+              );
 
           if (uploadError) {
-            throw new Error(uploadError.message);
+            throw new Error(
+              uploadError.message
+            );
           }
 
           newLogoPath = newFilePath;
         }
 
-        /*
-         * Actualizamos la empresa.
-         */
-        const { data: updatedCompany, error: updateError } =
-          await supabase
-            .from("companies")
-            .update({
-              name: name.trim(),
-              description: description.trim() || null,
-              logo_url: newLogoPath,
-              donation_nominal: donationValue,
-            })
-            .eq("id", editingCompanyId)
-            .select(
-              "id, name, description, logo_url, donation_nominal, sort_order, active"
-            )
-            .single();
+        const {
+          data: updatedCompany,
+          error: updateError,
+        } = await supabase
+          .from("companies")
+          .update({
+            name: name.trim(),
+            contact_name:
+              contactName.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            logo_url: newLogoPath,
+            donation_nominal: donationValue,
+          })
+          .eq("id", editingCompanyId)
+          .select(
+            "id, name, description, logo_url, donation_nominal, sort_order, active, contact_name, email, phone"
+          )
+          .single();
 
         if (updateError) {
           if (newFilePath) {
@@ -206,13 +248,14 @@ export default function EmpresasAdmin({
               .remove([newFilePath]);
           }
 
-          throw new Error(updateError.message);
+          throw new Error(
+            updateError.message
+          );
         }
 
-        /*
-         * Actualizamos también el estado general de campaña.
-         */
-        const { error: settingsError } = await supabase
+        const {
+          error: settingsError,
+        } = await supabase
           .from("campaign_settings")
           .update({
             objective_amount: objectiveValue,
@@ -221,13 +264,11 @@ export default function EmpresasAdmin({
           .eq("id", 1);
 
         if (settingsError) {
-          throw new Error(settingsError.message);
+          throw new Error(
+            settingsError.message
+          );
         }
 
-        /*
-         * Eliminamos el logo anterior solamente después
-         * de que la empresa quedó actualizada.
-         */
         if (
           newFilePath &&
           currentCompany.logo_url &&
@@ -235,7 +276,9 @@ export default function EmpresasAdmin({
         ) {
           await supabase.storage
             .from("company-logos")
-            .remove([currentCompany.logo_url]);
+            .remove([
+              currentCompany.logo_url,
+            ]);
         }
 
         setCompanies((current) =>
@@ -248,7 +291,9 @@ export default function EmpresasAdmin({
 
         resetForm();
 
-        setMessage("Empresa actualizada correctamente.");
+        setMessage(
+          "Empresa actualizada correctamente."
+        );
 
         return;
       }
@@ -260,50 +305,71 @@ export default function EmpresasAdmin({
        */
 
       if (!logo) {
-        throw new Error("Tenés que seleccionar un logo.");
+        throw new Error(
+          "Tenés que seleccionar un logo."
+        );
       }
 
       const fileExtension =
-        logo.name.split(".").pop()?.toLowerCase() || "png";
+        logo.name
+          .split(".")
+          .pop()
+          ?.toLowerCase() || "png";
 
       newFilePath = `${crypto.randomUUID()}.${fileExtension}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("company-logos")
-        .upload(newFilePath, logo, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      const { error: uploadError } =
+        await supabase.storage
+          .from("company-logos")
+          .upload(
+            newFilePath,
+            logo,
+            {
+              cacheControl: "3600",
+              upsert: false,
+            }
+          );
 
       if (uploadError) {
-        throw new Error(uploadError.message);
+        throw new Error(
+          uploadError.message
+        );
       }
 
-      const { data: insertedCompany, error: insertError } =
-        await supabase
-          .from("companies")
-          .insert({
-            name: name.trim(),
-            description: description.trim() || null,
-            logo_url: newFilePath,
-            donation_nominal: donationValue,
-            sort_order: companies.length,
-            active: true,
-          })
-          .select(
-            "id, name, description, logo_url, donation_nominal, sort_order, active"
-          )
-          .single();
+      const {
+        data: insertedCompany,
+        error: insertError,
+      } = await supabase
+        .from("companies")
+        .insert({
+          name: name.trim(),
+          contact_name:
+            contactName.trim() || null,
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          logo_url: newFilePath,
+          donation_nominal: donationValue,
+          sort_order: companies.length,
+          active: true,
+        })
+        .select(
+          "id, name, description, logo_url, donation_nominal, sort_order, active, contact_name, email, phone"
+        )
+        .single();
 
       if (insertError) {
         await supabase.storage
           .from("company-logos")
           .remove([newFilePath]);
 
-        throw new Error(insertError.message);
+        throw new Error(
+          insertError.message
+        );
       }
 
-      const { error: settingsError } = await supabase
+      const {
+        error: settingsError,
+      } = await supabase
         .from("campaign_settings")
         .update({
           objective_amount: objectiveValue,
@@ -312,7 +378,9 @@ export default function EmpresasAdmin({
         .eq("id", 1);
 
       if (settingsError) {
-        throw new Error(settingsError.message);
+        throw new Error(
+          settingsError.message
+        );
       }
 
       setCompanies((current) => [
@@ -340,12 +408,13 @@ export default function EmpresasAdmin({
     setError("");
     setMessage("");
 
-    const { error: updateError } = await supabase
-      .from("companies")
-      .update({
-        active: !company.active,
-      })
-      .eq("id", company.id);
+    const { error: updateError } =
+      await supabase
+        .from("companies")
+        .update({
+          active: !company.active,
+        })
+        .eq("id", company.id);
 
     if (updateError) {
       setError(updateError.message);
@@ -355,7 +424,10 @@ export default function EmpresasAdmin({
     setCompanies((current) =>
       current.map((item) =>
         item.id === company.id
-          ? { ...item, active: !item.active }
+          ? {
+              ...item,
+              active: !item.active,
+            }
           : item
       )
     );
@@ -372,7 +444,9 @@ export default function EmpresasAdmin({
       {/* FORMULARIO */}
       <section>
         <h2 className="text-xl font-medium text-white">
-          {editingCompanyId ? "Editar empresa" : "Nueva empresa"}
+          {editingCompanyId
+            ? "Editar empresa"
+            : "Nueva empresa"}
         </h2>
 
         {loadingSettings ? (
@@ -401,25 +475,66 @@ export default function EmpresasAdmin({
                 }
                 placeholder="Ej. Hotel Correntoso"
                 className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+                required
               />
             </div>
 
             <div>
               <label
-                htmlFor="company-description"
+                htmlFor="contact-name"
                 className="text-sm text-white/80"
               >
-                Descripción
+                Nombre de la persona que hizo la adhesión
               </label>
 
               <input
-                id="company-description"
+                id="contact-name"
                 type="text"
-                value={description}
+                value={contactName}
                 onChange={(event) =>
-                  setDescription(event.target.value)
+                  setContactName(event.target.value)
                 }
-                placeholder="Ej. VILLA LA ANGOSTURA"
+                placeholder="Ej. Juan Pérez"
+                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="company-email"
+                className="text-sm text-white/80"
+              >
+                Correo electrónico
+              </label>
+
+              <input
+                id="company-email"
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                placeholder="Ej. contacto@empresa.com"
+                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="company-phone"
+                className="text-sm text-white/80"
+              >
+                Teléfono
+              </label>
+
+              <input
+                id="company-phone"
+                type="tel"
+                value={phone}
+                onChange={(event) =>
+                  setPhone(event.target.value)
+                }
+                placeholder="Ej. 2944 123456"
                 className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
               />
             </div>
@@ -439,10 +554,13 @@ export default function EmpresasAdmin({
                 step="1"
                 value={donationNominal}
                 onChange={(event) =>
-                  setDonationNominal(event.target.value)
+                  setDonationNominal(
+                    event.target.value
+                  )
                 }
-                placeholder="Ej. 5000"
+                placeholder="Ej. 1000"
                 className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+                required
               />
             </div>
 
@@ -451,7 +569,7 @@ export default function EmpresasAdmin({
                 htmlFor="company-logo"
                 className="text-sm text-white/80"
               >
-                Logo
+                Logo de la empresa
               </label>
 
               <input
@@ -486,7 +604,7 @@ export default function EmpresasAdmin({
                     htmlFor="objective-amount"
                     className="text-sm text-white/80"
                   >
-                    Objetivo de la campaña (USD)
+                    Monto del objetivo (USD)
                   </label>
 
                   <input
@@ -496,9 +614,12 @@ export default function EmpresasAdmin({
                     step="1"
                     value={objectiveAmount}
                     onChange={(event) =>
-                      setObjectiveAmount(event.target.value)
+                      setObjectiveAmount(
+                        event.target.value
+                      )
                     }
                     className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+                    required
                   />
                 </div>
 
@@ -507,7 +628,7 @@ export default function EmpresasAdmin({
                     htmlFor="remaining-amount"
                     className="text-sm text-white/80"
                   >
-                    Pendiente para iniciar la construcción (USD)
+                    Restante al objetivo (USD)
                   </label>
 
                   <input
@@ -517,10 +638,17 @@ export default function EmpresasAdmin({
                     step="1"
                     value={remainingAmount}
                     onChange={(event) =>
-                      setRemainingAmount(event.target.value)
+                      setRemainingAmount(
+                        event.target.value
+                      )
                     }
                     className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+                    required
                   />
+
+                  <p className="mt-2 text-xs text-white/40">
+                    Este monto se actualiza manualmente.
+                  </p>
                 </div>
               </div>
             </div>
@@ -568,13 +696,13 @@ export default function EmpresasAdmin({
       {/* LISTADO */}
       <section>
         <h2 className="text-xl font-medium text-white">
-          Empresas cargadas
+          Empresas adheridas
         </h2>
 
         <div className="mt-4 space-y-3">
           {companies.length === 0 ? (
             <div className="rounded-lg border border-[#2b3540] bg-[#06121d] p-6 text-white/60">
-              Todavía no hay empresas cargadas.
+              Todavía no hay empresas adheridas.
             </div>
           ) : (
             companies.map((company) => (
@@ -582,14 +710,26 @@ export default function EmpresasAdmin({
                 key={company.id}
                 className="flex items-center justify-between rounded-lg border border-[#2b3540] bg-[#06121d] p-4"
               >
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-medium text-white">
                     {company.name}
                   </h3>
 
-                  {company.description && (
+                  {company.contact_name && (
+                    <p className="mt-1 text-sm text-white/70">
+                      {company.contact_name}
+                    </p>
+                  )}
+
+                  {company.email && (
                     <p className="mt-1 text-sm text-white/60">
-                      {company.description}
+                      {company.email}
+                    </p>
+                  )}
+
+                  {company.phone && (
+                    <p className="mt-1 text-sm text-white/60">
+                      {company.phone}
                     </p>
                   )}
 
@@ -615,10 +755,12 @@ export default function EmpresasAdmin({
                   </p>
                 </div>
 
-                <div className="flex flex-col items-end gap-2">
+                <div className="ml-4 flex shrink-0 flex-col items-end gap-2">
                   <button
                     type="button"
-                    onClick={() => handleEdit(company)}
+                    onClick={() =>
+                      handleEdit(company)
+                    }
                     className="flex h-9 w-9 items-center justify-center rounded-md border border-[#f39a1e] text-[#f39a1e]"
                     aria-label={`Editar ${company.name}`}
                     title="Editar empresa"
@@ -640,7 +782,9 @@ export default function EmpresasAdmin({
 
                   <button
                     type="button"
-                    onClick={() => handleToggle(company)}
+                    onClick={() =>
+                      handleToggle(company)
+                    }
                     className="rounded-md border border-[#f39a1e] px-4 py-2 text-xs text-[#f39a1e]"
                   >
                     {company.active
