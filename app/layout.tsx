@@ -15,15 +15,23 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MADdeM",
   description: "Monumento al Deporte de Montaña",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon0.svg", type: "image/svg+xml" },
+      { url: "/icon1.png", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {children}
     </html>
   );
 }
