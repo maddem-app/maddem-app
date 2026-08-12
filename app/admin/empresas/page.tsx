@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import EmpresasAdmin from "@/components/admin/EmpresasAdmin";
+import AdminLogout from "@/components/admin/AdminLogout";
 
 export default async function AdminEmpresasPage() {
   const supabase = await createSupabaseServerClient();
@@ -28,17 +29,25 @@ export default async function AdminEmpresasPage() {
 
   return (
     <main className="min-h-screen bg-[#020b14] px-6 py-8 text-white">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-semibold text-[#f39a1e]">
-          Empresas Fundadoras
-        </h1>
+     <div className="mx-auto max-w-3xl">
+  <div className="flex items-start justify-between gap-4">
+    <div>
+      <h1 className="text-3xl font-semibold text-[#f39a1e]">
+        Empresas Fundadoras
+      </h1>
 
-        <p className="mt-2 text-white/60">
-          Administración de empresas adheridas.
-        </p>
+      <p className="mt-2 text-white/60">
+        Administración de empresas adheridas.
+      </p>
+    </div>
 
-        <EmpresasAdmin initialCompanies={companies ?? []} />
-      </div>
+    <AdminLogout />
+  </div>
+
+  <div className="mt-8">
+    <EmpresasAdmin initialCompanies={companies ?? []} />
+  </div>
+</div>
     </main>
   );
 }

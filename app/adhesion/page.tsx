@@ -34,6 +34,7 @@ export default function AdhesionPage() {
     );
 
     // 1. Guardar la adhesión en Supabase
+    // La empresa queda pendiente de aprobación.
     const { data: company, error: insertError } = await supabase
       .from("companies")
       .insert({
@@ -44,18 +45,19 @@ export default function AdhesionPage() {
         donation_nominal: donationValue,
         adhesion_accepted: true,
         adhesion_at: new Date().toISOString(),
-        active: true,
+        active: false,
       })
       .select("id")
       .single();
 
     if (insertError || !company) {
       console.error("SUPABASE INSERT ERROR:", {
-  message: insertError?.message,
-  details: insertError?.details,
-  hint: insertError?.hint,
-  code: insertError?.code,
-});
+        message: insertError?.message,
+        details: insertError?.details,
+        hint: insertError?.hint,
+        code: insertError?.code,
+      });
+
       setError("No pudimos registrar la adhesión. Intentá nuevamente.");
       setLoading(false);
       return;
@@ -82,17 +84,21 @@ export default function AdhesionPage() {
 
       if (!response.ok || !result.success) {
         console.error(result);
+
         setError(
           "La adhesión fue registrada, pero no pudimos enviar la notificación. Intentá nuevamente."
         );
+
         setLoading(false);
         return;
       }
     } catch (error) {
       console.error(error);
+
       setError(
         "La adhesión fue registrada, pero no pudimos enviar la notificación. Intentá nuevamente."
       );
+
       setLoading(false);
       return;
     }
@@ -137,7 +143,8 @@ export default function AdhesionPage() {
             {/* EMPRESA */}
             <div>
               <label className="text-[12px] text-white/85">
-                Nombre de la empresa <span className="text-[#f39a1e]">*</span>
+                Nombre de la empresa{" "}
+                <span className="text-[#f39a1e]">*</span>
               </label>
 
               <input
@@ -250,7 +257,9 @@ export default function AdhesionPage() {
               disabled={loading}
               className="mt-2 flex h-10 w-full items-center justify-between rounded-md bg-[#f39a1e] px-4 text-[13px] font-medium text-[#020b14] disabled:opacity-60"
             >
-              <span>{loading ? "ENVIANDO..." : "ENVIAR ADHESIÓN"}</span>
+              <span>
+                {loading ? "ENVIANDO..." : "ENVIAR ADHESIÓN"}
+              </span>
 
               <span className="text-[21px] leading-none">›</span>
             </button>

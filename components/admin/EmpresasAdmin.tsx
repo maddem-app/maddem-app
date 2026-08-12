@@ -45,6 +45,7 @@ export default function EmpresasAdmin({
 
   const [loading, setLoading] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -122,7 +123,56 @@ export default function EmpresasAdmin({
     });
   }
 
-  async function handleSubmit(
+  async function handleToggleActive(
+    company: Company,
+    nextActive: boolean
+  ) {
+    setError("");
+    setMessage("");
+
+    const { data: updatedCompany, error: updateError } =
+      await supabase
+        .from("companies")
+        .update({
+          active: nextActive,
+        })
+        .eq("id", company.id)
+        .select(
+          "id, name, description, logo_url, donation_nominal, sort_order, active, contact_name, email, phone"
+        )
+        .single();
+
+    if (updateError || !updatedCompany) {
+      console.error("COMPANY ACTIVE UPDATE ERROR:", {
+        message: updateError?.message,
+        details: updateError?.details,
+        hint: updateError?.hint,
+        code: updateError?.code,
+      });
+
+      setError(
+        "No pudimos cambiar el estado de la empresa. Intentá nuevamente."
+      );
+
+      return;
+    }
+
+    setCompanies((current) =>
+      current.map((item) =>
+        item.id === company.id
+          ? updatedCompany
+          : item
+      )
+    );
+
+    setMessage(
+      nextActive
+        ? "Empresa activada correctamente."
+        : "Empresa desactivada correctamente."
+    );
+  }
+
+  async function handleCompanySubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
@@ -141,8 +191,6 @@ export default function EmpresasAdmin({
       }
 
       const donationValue = Number(donationNominal);
-      const objectiveValue = Number(objectiveAmount);
-      const remainingValue = Number(remainingAmount);
 
       if (
         !Number.isFinite(donationValue) ||
@@ -150,24 +198,6 @@ export default function EmpresasAdmin({
       ) {
         throw new Error(
           "La donación nominal no es válida."
-        );
-      }
-
-      if (
-        !Number.isFinite(objectiveValue) ||
-        objectiveValue < 0
-      ) {
-        throw new Error(
-          "El objetivo de campaña no es válido."
-        );
-      }
-
-      if (
-        !Number.isFinite(remainingValue) ||
-        remainingValue < 0
-      ) {
-        throw new Error(
-          "El monto restante no es válido."
         );
       }
 
@@ -250,22 +280,6 @@ export default function EmpresasAdmin({
 
           throw new Error(
             updateError.message
-          );
-        }
-
-        const {
-          error: settingsError,
-        } = await supabase
-          .from("campaign_settings")
-          .update({
-            objective_amount: objectiveValue,
-            remaining_amount: remainingValue,
-          })
-          .eq("id", 1);
-
-        if (settingsError) {
-          throw new Error(
-            settingsError.message
           );
         }
 
@@ -367,22 +381,6 @@ export default function EmpresasAdmin({
         );
       }
 
-      const {
-        error: settingsError,
-      } = await supabase
-        .from("campaign_settings")
-        .update({
-          objective_amount: objectiveValue,
-          remaining_amount: remainingValue,
-        })
-        .eq("id", 1);
-
-      if (settingsError) {
-        throw new Error(
-          settingsError.message
-        );
-      }
-
       setCompanies((current) => [
         ...current,
         insertedCompany,
@@ -391,7 +389,7 @@ export default function EmpresasAdmin({
       resetForm();
 
       setMessage(
-        "Empresa y estado de campaña actualizados correctamente."
+        "Empresa guardada correctamente."
       );
     } catch (err) {
       setError(
@@ -404,49 +402,262 @@ export default function EmpresasAdmin({
     }
   }
 
-  async function handleToggle(company: Company) {
-    setError("");
+  async function handleCampaignSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    setSavingSettings(true);
     setMessage("");
+    setError("");
 
-    const { error: updateError } =
-      await supabase
-        .from("companies")
-        .update({
-          active: !company.active,
-        })
-        .eq("id", company.id);
+    try {
+      const objectiveValue = Number(
+        objectiveAmount
+      );
+      const remainingValue = Number(
+        remainingAmount
+      );
 
-    if (updateError) {
-      setError(updateError.message);
-      return;
+      if (
+        !Number.isFinite(objectiveValue) ||
+        objectiveValue < 0
+      ) {
+        throw new Error(
+          "El objetivo de campaña no es válido."
+        );
+      }
+
+      if (
+        !Number.isFinite(remainingValue) ||
+        remainingValue < 0
+      ) {
+        throw new Error(
+          "El monto restante no es válido."
+        );
+      }
+
+      const { error: settingsError } =
+        await supabase
+          .from("campaign_settings")
+          .update({
+            objective_amount: objectiveValue,
+            remaining_amount: remainingValue,
+          })
+          .eq("id", 1);
+
+      if (settingsError) {
+        throw new Error(
+          settingsError.message
+        );
+      }
+
+      setMessage(
+        "Objetivo de campaña actualizado correctamente."
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al guardar el objetivo."
+      );
+    } finally {
+      setSavingSettings(false);
     }
-
-    setCompanies((current) =>
-      current.map((item) =>
-        item.id === company.id
-          ? {
-              ...item,
-              active: !item.active,
-            }
-          : item
-      )
-    );
-
-    setMessage(
-      company.active
-        ? "Empresa desactivada."
-        : "Empresa activada."
-    );
   }
 
   return (
     <div className="space-y-10">
-      {/* FORMULARIO */}
+      {/* EMPRESA */}
       <section>
         <h2 className="text-xl font-medium text-white">
           {editingCompanyId
             ? "Editar empresa"
             : "Nueva empresa"}
+        </h2>
+
+        <form
+          onSubmit={handleCompanySubmit}
+          className="mt-6 space-y-5"
+        >
+          <div>
+            <label
+              htmlFor="company-name"
+              className="text-sm text-white/80"
+            >
+              Nombre de la empresa
+            </label>
+
+            <input
+              id="company-name"
+              type="text"
+              value={name}
+              onChange={(event) =>
+                setName(event.target.value)
+              }
+              placeholder="Ej. Hotel Correntoso"
+              className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="contact-name"
+              className="text-sm text-white/80"
+            >
+              Nombre de la persona que hizo la adhesión
+            </label>
+
+            <input
+              id="contact-name"
+              type="text"
+              value={contactName}
+              onChange={(event) =>
+                setContactName(event.target.value)
+              }
+              placeholder="Ej. Juan Pérez"
+              className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="company-email"
+              className="text-sm text-white/80"
+            >
+              Correo electrónico
+            </label>
+
+            <input
+              id="company-email"
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="Ej. contacto@empresa.com"
+              className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="company-phone"
+              className="text-sm text-white/80"
+            >
+              Teléfono
+            </label>
+
+            <input
+              id="company-phone"
+              type="tel"
+              value={phone}
+              onChange={(event) =>
+                setPhone(event.target.value)
+              }
+              placeholder="Ej. 2944 123456"
+              className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="company-donation"
+              className="text-sm text-white/80"
+            >
+              Donación nominal (USD)
+            </label>
+
+            <input
+              id="company-donation"
+              type="number"
+              min="0"
+              step="1"
+              value={donationNominal}
+              onChange={(event) =>
+                setDonationNominal(
+                  event.target.value
+                )
+              }
+              placeholder="Ej. 1000"
+              className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="company-logo"
+              className="text-sm text-white/80"
+            >
+              Logo de la empresa
+            </label>
+
+            <input
+              id="company-logo"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={handleLogoChange}
+              className="mt-2 block w-full cursor-pointer rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-sm text-white/80"
+            />
+
+            {logo && (
+              <p className="mt-2 text-xs text-white/50">
+                {logo.name}
+              </p>
+            )}
+
+            {editingCompanyId && !logo && (
+              <p className="mt-2 text-xs text-white/40">
+                Si no seleccionás un archivo, se conserva el logo actual.
+              </p>
+            )}
+          </div>
+
+          {error && (
+            <p className="rounded-md border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+
+          {message && (
+            <p className="rounded-md border border-green-900/50 bg-green-950/30 px-4 py-3 text-sm text-green-400">
+              {message}
+            </p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-md bg-[#e9951c] px-6 py-3 text-sm font-medium text-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading
+                ? "GUARDANDO..."
+                : editingCompanyId
+                  ? "GUARDAR CAMBIOS"
+                  : "GUARDAR EMPRESA"}
+            </button>
+
+            {editingCompanyId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                disabled={loading}
+                className="rounded-md border border-[#2b3540] px-6 py-3 text-sm text-white/70 disabled:opacity-50"
+              >
+                CANCELAR
+              </button>
+            )}
+          </div>
+        </form>
+      </section>
+
+      {/* OBJETIVO DE CAMPAÑA */}
+      <section className="border-t border-[#2b3540] pt-8">
+        <h2 className="text-xl font-medium text-white">
+          Objetivo de campaña
         </h2>
 
         {loadingSettings ? (
@@ -455,110 +666,28 @@ export default function EmpresasAdmin({
           </p>
         ) : (
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleCampaignSubmit}
             className="mt-6 space-y-5"
           >
             <div>
               <label
-                htmlFor="company-name"
+                htmlFor="objective-amount"
                 className="text-sm text-white/80"
               >
-                Nombre de la empresa
+                Monto del objetivo (USD)
               </label>
 
               <input
-                id="company-name"
-                type="text"
-                value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
-                placeholder="Ej. Hotel Correntoso"
-                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="contact-name"
-                className="text-sm text-white/80"
-              >
-                Nombre de la persona que hizo la adhesión
-              </label>
-
-              <input
-                id="contact-name"
-                type="text"
-                value={contactName}
-                onChange={(event) =>
-                  setContactName(event.target.value)
-                }
-                placeholder="Ej. Juan Pérez"
-                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="company-email"
-                className="text-sm text-white/80"
-              >
-                Correo electrónico
-              </label>
-
-              <input
-                id="company-email"
-                type="email"
-                value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
-                placeholder="Ej. contacto@empresa.com"
-                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="company-phone"
-                className="text-sm text-white/80"
-              >
-                Teléfono
-              </label>
-
-              <input
-                id="company-phone"
-                type="tel"
-                value={phone}
-                onChange={(event) =>
-                  setPhone(event.target.value)
-                }
-                placeholder="Ej. 2944 123456"
-                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="company-donation"
-                className="text-sm text-white/80"
-              >
-                Donación nominal (USD)
-              </label>
-
-              <input
-                id="company-donation"
+                id="objective-amount"
                 type="number"
                 min="0"
                 step="1"
-                value={donationNominal}
+                value={objectiveAmount}
                 onChange={(event) =>
-                  setDonationNominal(
+                  setObjectiveAmount(
                     event.target.value
                   )
                 }
-                placeholder="Ej. 1000"
                 className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
                 required
               />
@@ -566,129 +695,41 @@ export default function EmpresasAdmin({
 
             <div>
               <label
-                htmlFor="company-logo"
+                htmlFor="remaining-amount"
                 className="text-sm text-white/80"
               >
-                Logo de la empresa
+                Restante al objetivo (USD)
               </label>
 
               <input
-                id="company-logo"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                onChange={handleLogoChange}
-                className="mt-2 block w-full cursor-pointer rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-sm text-white/80"
+                id="remaining-amount"
+                type="number"
+                min="0"
+                step="1"
+                value={remainingAmount}
+                onChange={(event) =>
+                  setRemainingAmount(
+                    event.target.value
+                  )
+                }
+                className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
+                required
               />
 
-              {logo && (
-                <p className="mt-2 text-xs text-white/50">
-                  {logo.name}
-                </p>
-              )}
-
-              {editingCompanyId && !logo && (
-                <p className="mt-2 text-xs text-white/40">
-                  Si no seleccionás un archivo, se conserva el logo actual.
-                </p>
-              )}
-            </div>
-
-            <div className="border-t border-[#2b3540] pt-5">
-              <h3 className="text-lg font-medium text-white">
-                Estado de la campaña
-              </h3>
-
-              <div className="mt-4 space-y-5">
-                <div>
-                  <label
-                    htmlFor="objective-amount"
-                    className="text-sm text-white/80"
-                  >
-                    Monto del objetivo (USD)
-                  </label>
-
-                  <input
-                    id="objective-amount"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={objectiveAmount}
-                    onChange={(event) =>
-                      setObjectiveAmount(
-                        event.target.value
-                      )
-                    }
-                    className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="remaining-amount"
-                    className="text-sm text-white/80"
-                  >
-                    Restante al objetivo (USD)
-                  </label>
-
-                  <input
-                    id="remaining-amount"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={remainingAmount}
-                    onChange={(event) =>
-                      setRemainingAmount(
-                        event.target.value
-                      )
-                    }
-                    className="mt-2 w-full rounded-md border border-[#2b3540] bg-[#020b14] px-4 py-3 text-white outline-none focus:border-[#f39a1e]"
-                    required
-                  />
-
-                  <p className="mt-2 text-xs text-white/40">
-                    Este monto se actualiza manualmente.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <p className="rounded-md border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-                {error}
+              <p className="mt-2 text-xs text-white/40">
+                Este monto se actualiza manualmente.
               </p>
-            )}
-
-            {message && (
-              <p className="rounded-md border border-green-900/50 bg-green-950/30 px-4 py-3 text-sm text-green-400">
-                {message}
-              </p>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-md bg-[#e9951c] px-6 py-3 text-sm font-medium text-[#111] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading
-                  ? "GUARDANDO..."
-                  : editingCompanyId
-                    ? "GUARDAR CAMBIOS"
-                    : "GUARDAR EMPRESA"}
-              </button>
-
-              {editingCompanyId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  disabled={loading}
-                  className="rounded-md border border-[#2b3540] px-6 py-3 text-sm text-white/70 disabled:opacity-50"
-                >
-                  CANCELAR
-                </button>
-              )}
             </div>
+
+            <button
+              type="submit"
+              disabled={savingSettings}
+              className="rounded-md bg-[#e9951c] px-6 py-3 text-sm font-medium text-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {savingSettings
+                ? "GUARDANDO..."
+                : "GUARDAR OBJETIVO"}
+            </button>
           </form>
         )}
       </section>
@@ -745,12 +786,12 @@ export default function EmpresasAdmin({
                       className={
                         company.active
                           ? "text-green-400"
-                          : "text-red-400"
+                          : "text-yellow-400"
                       }
                     >
                       {company.active
                         ? "ACTIVA"
-                        : "INACTIVA"}
+                        : "PENDIENTE"}
                     </span>
                   </p>
                 </div>
@@ -780,17 +821,33 @@ export default function EmpresasAdmin({
                     </svg>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleToggle(company)
-                    }
-                    className="rounded-md border border-[#f39a1e] px-4 py-2 text-xs text-[#f39a1e]"
-                  >
-                    {company.active
-                      ? "Desactivar"
-                      : "Activar"}
-                  </button>
+                  {company.active ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleToggleActive(
+                          company,
+                          false
+                        )
+                      }
+                      className="rounded-md border border-yellow-500/60 px-3 py-2 text-[11px] font-medium text-yellow-400"
+                    >
+                      DESACTIVAR
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleToggleActive(
+                          company,
+                          true
+                        )
+                      }
+                      className="rounded-md border border-green-500/60 px-3 py-2 text-[11px] font-medium text-green-400"
+                    >
+                      ACTIVAR
+                    </button>
+                  )}
                 </div>
               </article>
             ))
