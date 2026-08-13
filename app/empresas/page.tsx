@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
+import NovedadesBell from "@/components/NovedadesBell";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -50,26 +51,8 @@ export default async function EmpresasPage() {
             </div>
           </Link>
 
-          {/* CAMPANA */}
-          <Link
-            href="/novedades"
-            aria-label="Novedades"
-            className="mt-1 flex h-9 w-9 items-center justify-center text-white"
-          >
-            <svg
-              width="25"
-              height="25"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-              <path d="M10 21h4" />
-            </svg>
-          </Link>
+         {/* CAMPANA */}
+<NovedadesBell />
         </header>
 
         {/* CONTENIDO */}
