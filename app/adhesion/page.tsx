@@ -3,11 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
-import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 
 export default function AdhesionPage() {
   const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
 
   const [name, setName] = useState("");
   const [contactName, setContactName] = useState("");
@@ -29,41 +27,7 @@ export default function AdhesionPage() {
 
     setLoading(true);
 
-    const donationValue = Number(
-      donation.replace(/\./g, "").replace(",", ".")
-    );
-
-    // 1. Guardar la adhesión en Supabase
-    // La empresa queda pendiente de aprobación.
-    const { data: company, error: insertError } = await supabase
-      .from("companies")
-      .insert({
-        name,
-        contact_name: contactName,
-        email,
-        phone,
-        donation_nominal: donationValue,
-        adhesion_accepted: true,
-        adhesion_at: new Date().toISOString(),
-        active: false,
-      })
-      .select("id")
-      .single();
-
-    if (insertError || !company) {
-      console.error("SUPABASE INSERT ERROR:", {
-        message: insertError?.message,
-        details: insertError?.details,
-        hint: insertError?.hint,
-        code: insertError?.code,
-      });
-
-      setError("No pudimos registrar la adhesión. Intentá nuevamente.");
-      setLoading(false);
-      return;
-    }
-
-    // 2. Enviar el correo de notificación
+    // 1. Enviar la adhesión a la API del servidor
     try {
       const response = await fetch("/api/adhesion", {
         method: "POST",
@@ -71,7 +35,6 @@ export default function AdhesionPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          companyId: company.id,
           name,
           contactName,
           email,
@@ -86,7 +49,8 @@ export default function AdhesionPage() {
         console.error(result);
 
         setError(
-          "La adhesión fue registrada, pero no pudimos enviar la notificación. Intentá nuevamente."
+          result.error ||
+            "No pudimos registrar la adhesión. Intentá nuevamente."
         );
 
         setLoading(false);
@@ -96,14 +60,14 @@ export default function AdhesionPage() {
       console.error(error);
 
       setError(
-        "La adhesión fue registrada, pero no pudimos enviar la notificación. Intentá nuevamente."
+        "No pudimos registrar la adhesión. Intentá nuevamente."
       );
 
       setLoading(false);
       return;
     }
 
-    // 3. Todo correcto → pantalla de agradecimiento
+    // 2. Todo correcto → pantalla de agradecimiento
     router.push("/adhesion/gracias");
   }
 

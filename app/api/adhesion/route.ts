@@ -1,4 +1,16 @@
+import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,7 +19,6 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const {
-      companyId,
       name,
       contactName,
       email,
@@ -16,7 +27,6 @@ export async function POST(request: Request) {
     } = body;
 
     if (
-      !companyId ||
       !name ||
       !contactName ||
       !email ||
@@ -25,17 +35,67 @@ export async function POST(request: Request) {
     ) {
       return Response.json(
         {
-          error: "Faltan datos para enviar la notificación.",
+          error: "Faltan datos para registrar la adhesión.",
         },
         { status: 400 }
       );
     }
 
+    const donationValue = Number(
+      String(donation).replace(/\./g, "").replace(",", ".")
+    );
+
+    if (!Number.isFinite(donationValue)) {
+      return Response.json(
+        {
+          error: "El aporte indicado no es válido.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 1. Registrar la adhesión desde el servidor.
+    // La service role permite obtener el ID sin depender
+    // de las políticas RLS del usuario anónimo.
+
+    const { data: company, error: insertError } = await supabaseAdmin
+      .from("companies")
+      .insert({
+        name,
+        contact_name: contactName,
+        email,
+        phone,
+        donation_nominal: donationValue,
+        adhesion_accepted: true,
+        adhesion_at: new Date().toISOString(),
+        active: false,
+      })
+      .select("id")
+      .single();
+
+    if (insertError || !company) {
+      console.error("SUPABASE ADHESION INSERT ERROR:", {
+        message: insertError?.message,
+        details: insertError?.details,
+        hint: insertError?.hint,
+        code: insertError?.code,
+      });
+
+      return Response.json(
+        {
+          error: "No se pudo registrar la adhesión.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // 2. Enviar el correo de notificación
+
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
       "https://maddem-app.vercel.app";
 
-    const adminUrl = `${baseUrl}/admin?company=${companyId}`;
+    const adminUrl = `${baseUrl}/admin?company=${company.id}`;
 
     const { data, error } = await resend.emails.send({
       from: "MADdeM <onboarding@resend.dev>",
@@ -79,7 +139,7 @@ export async function POST(request: Request) {
           </p>
 
           <p style="font-size: 12px; color: #777;">
-            ID de empresa: ${companyId}
+            ID de empresa: ${company.id}
           </p>
         </div>
       `,
@@ -90,7 +150,7 @@ export async function POST(request: Request) {
 
       return Response.json(
         {
-          error: "No se pudo enviar el correo.",
+          error: "La adhesión fue registrada, pero no se pudo enviar la notificación.",
         },
         { status: 400 }
       );
@@ -98,6 +158,7 @@ export async function POST(request: Request) {
 
     return Response.json({
       success: true,
+      companyId: company.id,
       data,
     });
   } catch (error) {
@@ -105,7 +166,7 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        error: "Error interno al enviar el correo.",
+        error: "Error interno al procesar la adhesión.",
       },
       { status: 500 }
     );
