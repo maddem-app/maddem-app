@@ -236,7 +236,7 @@ export default function DestinoPage() {
       </div>
 
       {/* BOTTOM NAV */}
-      <BottomNav active="destino" />
+      <BottomNav active="menu" />
     </main>
   );
 }

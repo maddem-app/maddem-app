@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function BottomNav({
   active,
 }: {
-  active: "estado" | "empresas" | "destino" | "menu";
+  active: "estado" | "empresas" | "novedades" | "menu";
 }) {
   return (
     <nav className="fixed bottom-0 left-1/2 z-20 flex h-[68px] w-full max-w-md -translate-x-1/2 border-t border-[#27313a] bg-[#020b14]">
@@ -12,6 +12,13 @@ export default function BottomNav({
         icon="menu"
         label="Menú"
         active={active === "menu"}
+      />
+
+      <NavItem
+        href="/novedades"
+        icon="news"
+        label="Novedades"
+        active={active === "novedades"}
       />
 
       <NavItem
@@ -27,13 +34,6 @@ export default function BottomNav({
         label="Empresas"
         active={active === "empresas"}
       />
-
-      <NavItem
-        href="/destino"
-        icon="destino"
-        label="Destino"
-        active={active === "destino"}
-      />
     </nav>
   );
 }
@@ -46,7 +46,7 @@ function NavItem({
 }: {
   href: string;
   active?: boolean;
-  icon: "state" | "companies" | "destino" | "menu";
+  icon: "state" | "companies" | "news" | "menu";
   label: string;
 }) {
   const color = active ? "#f39a1e" : "#ffffff";
@@ -89,7 +89,7 @@ function NavItem({
         </svg>
       )}
 
-      {icon === "destino" && (
+      {icon === "news" && (
         <svg
           width="24"
           height="24"
@@ -100,8 +100,10 @@ function NavItem({
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M4 20l7-12 3 5 3-5 3 12" />
-          <path d="M8 20h8" />
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="M8 8h8" />
+          <path d="M8 12h8" />
+          <path d="M8 16h5" />
         </svg>
       )}
 

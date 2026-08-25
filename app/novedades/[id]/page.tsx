@@ -150,7 +150,7 @@ export default async function NovedadPage({
         </article>
 
         {/* BOTTOM NAV */}
-        <BottomNav active="menu" />
+        <BottomNav active="novedades" />
       </div>
     </main>
   );
