@@ -109,6 +109,12 @@ export default function MenuPage() {
             />
 
             <MenuItem
+              href="/semilla-studio"
+              icon="semilla"
+              label="Diseño y Desarrollo"
+            />
+
+            <MenuItem
               href="/certificado"
               icon="certificate"
               label="Certificado de Empresa Fundadora"
@@ -144,7 +150,7 @@ export default function MenuPage() {
           </Link>
         </section>
 
-       <BottomNav active="menu" />
+        <BottomNav active="menu" />
       </div>
     </main>
   );
@@ -167,6 +173,7 @@ function MenuItem({
     | "artist"
     | "questions"
     | "contact"
+    | "semilla"
     | "certificate";
   label: string;
 }) {
@@ -358,6 +365,25 @@ function MenuItem({
           </svg>
         )}
 
+        {/* SEMILLA STUDIO */}
+        {icon === "semilla" && (
+          <svg
+            width="25"
+            height="25"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20V10" />
+            <path d="M12 14c-4 0-6.5-2.2-6.5-5.5C9.5 8.5 12 10.5 12 14z" />
+            <path d="M12 11c0-3.5 2.5-6 6.5-6C18.5 8.5 16 11 12 11z" />
+            <path d="M7 20h10" />
+          </svg>
+        )}
+
         {/* CERTIFICADO */}
         {icon === "certificate" && (
           <svg
@@ -377,7 +403,13 @@ function MenuItem({
         )}
       </div>
 
-      <span className="flex-1 text-[13px] text-white/90">{label}</span>
+      <span
+        className={`flex-1 text-[13px] ${
+          icon === "semilla" ? "text-[#f39a1e]" : "text-white/90"
+        }`}
+      >
+        {label}
+      </span>
 
       <svg
         width="18"

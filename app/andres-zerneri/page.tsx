@@ -1,5 +1,117 @@
+"use client";
+
 import Image from "next/image";
 import BottomNav from "@/components/BottomNav";
+import { useState } from "react";
+
+function InstagramIcon() {
+  return (
+    <svg
+      width="25"
+      height="25"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.5" cy="6.7" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg
+      width="25"
+      height="25"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.2 2.4 3.4 5.4 3.4 9s-1.2 6.6-3.4 9" />
+      <path d="M12 3c-2.2 2.4-3.4 5.4-3.4 9s1.2 6.6 3.4 9" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg
+      width="25"
+      height="25"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7.2 3.8l3 2.4-1.8 3.1c1 2.1 2.3 3.5 4.4 4.5l3.1-1.8 2.4 3c.6.8.5 1.9-.2 2.5l-1.3 1.1c-.7.6-1.7.8-2.6.5-5.7-1.8-9.8-5.9-11.6-11.6-.3-.9-.1-1.9.5-2.6l1.1-1.3c.6-.7 1.7-.8 2.5-.2z" />
+    </svg>
+  );
+}
+
+function PhoneContact() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const phone = "+54 11 3613 6130";
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(phone);
+
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    } catch {
+      // Si el navegador no permite copiar, no hacemos nada.
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label="Mostrar teléfono de Andrés Zerneri"
+        title="Teléfono de Andrés Zerneri"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex h-[25px] w-[25px] items-center justify-center text-[#e88a18]"
+      >
+        <PhoneIcon />
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-white/10 bg-[#06121d] px-4 py-3 shadow-xl">
+          <span className="whitespace-nowrap text-[13px] text-white/90">
+            {phone}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Copiar teléfono"
+            title="Copiar teléfono"
+            onClick={handleCopy}
+            className="flex h-7 w-7 items-center justify-center text-[16px] text-[#e88a18]"
+          >
+            {copied ? "✓" : "⧉"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AndresZerneriPage() {
   return (
@@ -126,6 +238,57 @@ export default function AndresZerneriPage() {
         </ul>
       </section>
 
+      {/* CONTACTO ANDRÉS */}
+      <section className="border-t border-white/10 px-6 py-8">
+        <p className="mb-5 text-[11px] uppercase tracking-[0.25em] text-[#e88a18]">
+          Contacto
+        </p>
+
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-5 text-[#e88a18]">
+          <a
+            href="https://www.instagram.com/andreszerneri/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram de Andrés Zerneri"
+            title="Instagram de Andrés Zerneri"
+            className="flex items-center gap-2"
+          >
+            <InstagramIcon />
+            <span className="text-[13px] text-white/80">Andrés Zerneri</span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/zerneriobras/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram de Obras"
+            title="Instagram de Obras"
+            className="flex items-center gap-2"
+          >
+            <InstagramIcon />
+            <span className="text-[13px] text-white/80">Obras</span>
+          </a>
+
+          <div className="flex items-center gap-5">
+            <PhoneContact />
+
+            <a
+              href="https://andreszerneri.com.ar"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Sitio web de Andrés Zerneri"
+              title="andreszerneri.com.ar"
+              className="flex items-center gap-2"
+            >
+              <GlobeIcon />
+              <span className="text-[13px] text-white/80">
+                andreszerneri.com.ar
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CIERRE ANDRÉS */}
       <section className="border-t border-white/10 px-6 py-10 text-center">
         <div className="mx-auto h-px w-16 bg-[#e88a18]" />
@@ -150,12 +313,13 @@ export default function AndresZerneriPage() {
           Coordinación, desarrollo y articulación de los aspectos técnicos,
           tecnológicos, institucionales y operativos del proyecto MADdeM.
         </p>
+
         <a
-  href="tel:+541134490093"
-  className="mt-4 inline-block text-[13px] text-[#e88a18]"
->
-  11 3449-0093
-</a>
+          href="tel:+541134490093"
+          className="mt-4 inline-block text-[13px] text-[#e88a18]"
+        >
+          11 3449-0093
+        </a>
       </section>
 
       {/* NAVEGACIÓN */}
